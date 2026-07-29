@@ -1,6 +1,8 @@
-# Vindatathon 2026 Data Pipeline
+# Data Pipeline — E-Commerce Retail ETL
 
 **Pydantic → PostgreSQL → dbt** — end-to-end ETL pipeline that validates raw CSV data, loads it into PostgreSQL, and transforms it into feature-ready mart tables.
+
+> **Dataset acknowledgment**: This project uses retail e-commerce data from [**Vindatathon 2026, Round 1**](https://www.kaggle.com/competitions/vindatathon-2026).
 
 ## Architecture
 
@@ -31,26 +33,27 @@
 ## Project Structure
 
 ```
-vindatathon-pipeline/
-├── dataset/datathon-2026-round-1/   # Downloaded CSVs
-├── src/vindatathon/
-│   ├── config.py                    # DB connection, paths, env loading
-│   ├── ingest.py                    # CSV → Pydantic → PostgreSQL
-│   └── models/                      # 13 Pydantic row validators
+data-pipeline/
+├── dataset/                          # CSV files (downloaded, gitignored)
+├── src/data_pipeline/
+│   ├── config.py                     # DB connection, paths, env loading
+│   ├── ingest.py                     # CSV → Pydantic → PostgreSQL
+│   └── models/                       # 13 Pydantic row validators
 ├── dbt_project/
 │   ├── dbt_project.yml
 │   ├── profiles.yml
 │   ├── packages.yml
 │   └── models/
-│       ├── staging/_sources.yml     # Source definitions + tests
-│       ├── staging/schema.yml       # Staging model tests
-│       ├── intermediate/            # 6 intermediate models
+│       ├── staging/_sources.yml      # Source definitions + tests
+│       ├── staging/schema.yml        # Staging model tests
+│       ├── intermediate/             # 6 intermediate models
 │       ├── intermediate/schema.yml
-│       ├── marts/                   # 4 mart models
+│       ├── marts/                    # 4 mart models
 │       └── marts/schema.yml
-├── .env                             # Database credentials
+├── .env.example                      # Credentials template
 ├── pyproject.toml
-└── Makefile
+├── Makefile
+└── .gitignore
 ```
 
 ## Setup Guide
@@ -65,7 +68,7 @@ vindatathon-pipeline/
 
 ```bash
 git clone <repo-url>
-cd vindatathon-pipeline
+cd data-pipeline
 ```
 
 ### 2. Download dataset
@@ -73,10 +76,10 @@ cd vindatathon-pipeline
 ```bash
 pip install gdown
 gdown --folder "https://drive.google.com/drive/folders/17craI5-exAYN7S5GlnTG9F5gRu0_v7BK?usp=sharing" \
-  -O dataset/datathon-2026-round-1/
+  -O dataset/
 ```
 
-This downloads 13 CSV files plus a baseline notebook into `dataset/datathon-2026-round-1/`.
+This downloads 13 CSV files plus a baseline notebook into `dataset/`.
 
 ### 3. Install Python dependencies
 
@@ -97,35 +100,35 @@ cp .env.example .env
 Edit `.env` with your PostgreSQL credentials:
 
 ```env
-VINDATATHON_DB_HOST=localhost
-VINDATATHON_DB_PORT=5432
-VINDATATHON_DB_NAME=vindatathon
-VINDATATHON_DB_USER=postgres
-VINDATATHON_DB_PASSWORD=postgres
-VINDATATHON_DB_SCHEMA=raw
+DATA_DB_HOST=localhost
+DATA_DB_PORT=5432
+DATA_DB_NAME=data_pipeline
+DATA_DB_USER=postgres
+DATA_DB_PASSWORD=postgres
+DATA_DB_SCHEMA=raw
 ```
 
 ### 5. Create the database
 
 ```bash
-createdb -U postgres -h localhost vindatathon
+createdb -U postgres -h localhost data_pipeline
 ```
 
-### 5. Run ingestion (validate + load CSVs → PostgreSQL)
+### 6. Run ingestion (validate + load CSVs → PostgreSQL)
 
 ```bash
-python -m vindatathon.ingest
+python -m data_pipeline.ingest
 ```
 
-This reads all 13 CSVs from `dataset/datathon-2026-round-1/`, validates each row against Pydantic models, creates `raw.*` tables, and bulk-inserts clean data. Any rejected rows are logged to `dataset/ingest_errors.csv`.
+This reads all 13 CSVs from `dataset/`, validates each row against Pydantic models, creates `raw.*` tables, and bulk-inserts clean data. Any rejected rows are logged to `dataset/ingest_errors.csv`.
 
-### 6. Install dbt packages
+### 7. Install dbt packages
 
 ```bash
 dbt deps --project-dir dbt_project
 ```
 
-### 7. Run dbt models
+### 8. Run dbt models
 
 ```bash
 dbt run --project-dir dbt_project
@@ -133,7 +136,7 @@ dbt run --project-dir dbt_project
 
 Builds staging → intermediate → marts.
 
-### 8. Run dbt tests
+### 9. Run dbt tests
 
 ```bash
 dbt test --project-dir dbt_project
@@ -190,7 +193,7 @@ pg_lsclusters  # list clusters (Ubuntu/Debian)
 
 **Role does not exist**
 ```bash
-createdb -U $(whoami) vindatathon  # use your local user
+createdb -U $(whoami) data_pipeline  # use your local user
 ```
 
 **dbt profile not found** — Ensure `profiles.yml` is in the `dbt_project/` directory and environment variables are set. On first run, dbt looks for profiles in `~/.dbt/`. Symlink it:

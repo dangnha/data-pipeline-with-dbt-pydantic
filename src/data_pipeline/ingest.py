@@ -264,7 +264,7 @@ def main():
     print("Creating / resetting database tables...")
     create_tables(engine)
 
-    errors_path = DATASET_DIR.parent / "ingest_errors.csv"
+    errors_path = DATASET_DIR / "ingest_errors.csv"
     errors_file = open(errors_path, "w", newline="")
     errors_writer = csv.writer(errors_file)
     errors_writer.writerow(["table", "row_number", "error"])
