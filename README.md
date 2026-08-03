@@ -1,8 +1,8 @@
 # Data Pipeline — E-Commerce Retail ETL
 
 **Pydantic → PostgreSQL → dbt** — end-to-end ETL pipeline that validates raw CSV data, loads it into PostgreSQL, and transforms it into feature-ready mart tables.
-
-> **Dataset acknowledgment**: This project uses retail e-commerce data from [**Vindatathon 2026, Round 1**](https://www.kaggle.com/competitions/vindatathon-2026).
+[
+> **Dataset acknowledgment**: This project uses retail e-commerce data from [**Vindatathon 2026, Round 1**](https://www.kaggle.com/competitions/vindatathon-2026](https://www.kaggle.com/competitions/datathon-2026-round-1)).
 
 ## Architecture
 
